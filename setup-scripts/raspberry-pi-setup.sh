@@ -11,7 +11,7 @@ sudo mv /etc/default/hostapd /etc/default/hostapd.sav
 sudo cp hostapd.new /etc/default/hostapd
 rm hostapd.new
 
-sudo cp config/hostapd.conf /etc/hostapd/hostapd.conf
+sudo cp wifi-setup/config/hostapd.conf /etc/hostapd/hostapd.conf
 
 # Edit the file /etc/default/udhcpd and comment out the line:
 # DHCPD_ENABLED="no"
@@ -21,8 +21,8 @@ sudo cp udhcpd.new /etc/default/udhcpd
 rm udhcpd.new
 
 sudo mv /etc/udhcpd.conf /etc/udhcpd.conf.sav
-sudo cp config/udhcpd.conf /etc/udhcpd.conf
+sudo cp wifi-setup/config/udhcpd.conf /etc/udhcpd.conf
 
 # Run wifi-setup on system start
-sudo cp config/wifi-setup.service /lib/systemd/system
+sudo cp wifi-setup/config/wifi-setup.service /lib/systemd/system
 sudo systemctl enable wifi-setup
