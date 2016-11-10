@@ -1,5 +1,5 @@
 #!/bin/bash
-mydir=$(dirname $0)
+source_dir=$( cd "$(dirname "$0")"/.. ; pwd )
 
 sudo apt-get install -y hostapd
 sudo apt-get install -y udhcpd
@@ -14,7 +14,7 @@ sudo mv /etc/default/hostapd /etc/default/hostapd.sav
 sudo cp hostapd.new /etc/default/hostapd
 rm hostapd.new
 
-sudo cp $mydir/config/hostapd.conf /etc/hostapd/hostapd.conf
+sudo cp $source_dir/config/hostapd.conf /etc/hostapd/hostapd.conf
 
 # Edit the file /etc/default/udhcpd and comment out the line:
 # DHCPD_ENABLED="no"
@@ -24,8 +24,10 @@ sudo cp udhcpd.new /etc/default/udhcpd
 rm udhcpd.new
 
 sudo mv /etc/udhcpd.conf /etc/udhcpd.conf.sav
-sudo cp $mydir/config/udhcpd.conf /etc/udhcpd.conf
+sudo cp $source_dir/config/udhcpd.conf /etc/udhcpd.conf
 
 # Run wifi-setup on system start
-sudo cp $mydir/config/wifi-setup.service /lib/systemd/system
+# Note: the ugly bash expansion below replaces all `/` with `\/` so that sed is
+# happy.
+sudo sed "s/<SOURCEDIR>/${source_dir////\\/}/g" $source_dir/config/wifi-setup.service.in > /lib/systemd/system/wifi-setup.service
 sudo systemctl enable wifi-setup
