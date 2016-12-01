@@ -1,4 +1,6 @@
 var Express = require('express');
+var http = require('http');
+var https = require('https');
 var Handlebars = require('handlebars');
 var bodyParser = require('body-parser');
 var fs = require('fs');
@@ -16,7 +18,8 @@ var preliminaryScanResults;
 // and exit. But if we never get a wifi connection, go into AP mode.
 waitForWifi(5, 3000)
   .then(runNextStageAndExit)
-  .catch(() => { startServer(); startAP() });
+  .catch(() => { startServer(); startAP() })
+  .catch(e => console.error(e));
 
 // Return a promise, then check every interval ms for a wifi connection.
 // Resolve the promise when we're connected. Or, if we aren't connected
@@ -72,6 +75,13 @@ function startAP() {
     });
 }
 
+function sslOptions() {
+  return {
+    key: fs.readFileSync('ssl/key.pem'),
+    cert: fs.readFileSync('ssl/cert.pem')
+  };
+}
+
 function startServer(wifiStatus) {
   // Now start up the express server
   var server = Express();
@@ -80,14 +90,19 @@ function startServer(wifiStatus) {
   server.use(bodyParser.urlencoded({extended:false}));
 
   // Define the handler methods for the various URLs we handle
-  server.get('/', handleWifiSetup);
   server.post('/connect', handleConnect);
+  server.use(handleWifiSetup); // catch all paths
 
   // And start listening for connections
-  // XXX: note that we are HTTP only... is this a security issue?
-  // XXX: for first-time this is on an open access point.
-  server.listen(80);
-  console.log('HTTP server listening on port 80');
+  http.createServer(server).listen(80);
+  console.log('HTTP server listening on port 80.');
+  try {
+    https.createServer(sslOptions(), server).listen(443);
+    console.log('HTTPS server listening on port 443.');
+  } catch(e) {
+    console.error('Could not start the HTTPS server.');
+    console.error('Please check that the certificate and the private key are in files ssl/cert.pem and ssl/key.pem');
+  }
 }
 
 function getTemplate(filename) {
