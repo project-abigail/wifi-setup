@@ -2,9 +2,9 @@
 source_dir=$( cd "$(dirname "$0")"/.. ; pwd )
 
 sudo apt-get install -y hostapd
-sudo apt-get install -y udhcpd
+sudo apt-get install -y dnsmasq
 sudo systemctl disable hostapd
-sudo systemctl disable udhcpd
+sudo systemctl disable dnsmasq
 
 # Add:
 # DAEMON_CONF="/etc/hostapd/hostapd.conf"
@@ -16,15 +16,8 @@ rm hostapd.new
 
 sudo cp $source_dir/config/hostapd.conf /etc/hostapd/hostapd.conf
 
-# Edit the file /etc/default/udhcpd and comment out the line:
-# DHCPD_ENABLED="no"
-perl -e 'while(<>) {if (/DHCPD_ENABLED=/) {print("#DHCPD_ENABLED=\"no\"\n")} else {print($_)}} ' < /etc/default/udhcpd > udhcpd.new
-sudo mv /etc/default/udhcpd /etc/default/udhcpd.sav
-sudo cp udhcpd.new /etc/default/udhcpd
-rm udhcpd.new
-
-sudo mv /etc/udhcpd.conf /etc/udhcpd.conf.sav
-sudo cp $source_dir/config/udhcpd.conf /etc/udhcpd.conf
+sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.sav
+sudo cp $source_dir/config/dnsmasq.conf /etc/dnsmasq.conf
 
 # Run wifi-setup on system start
 # Note: the ugly bash expansion below replaces all `/` with `\/` so that sed is
